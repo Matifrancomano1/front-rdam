@@ -76,6 +76,7 @@ export default function PortalHome() {
 
       sessionStorage.setItem('portal_exp',   JSON.stringify(exp))
       sessionStorage.setItem('portal_email', email.trim())
+      sessionStorage.setItem('portal_codigo', codigo.trim())
       navigate('/portal/resultado')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status

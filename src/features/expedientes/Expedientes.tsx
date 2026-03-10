@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Filter, MapPin, X } from 'lucide-react'
+import { Plus, Search, Filter, MapPin, X, Edit2, Trash2 } from 'lucide-react'
 import { expedientesApi } from '@/api/services'
 import type { Expediente, EstadoExpediente } from '@/types'
 import { fmt, ESTADO_LABEL, getErrMsg } from '@/utils'
-import { EstadoBadge, Pagination, SkeletonRows, EmptyState, Modal } from '@/components/ui'
+import { EstadoBadge, Pagination, SkeletonRows, EmptyState, Modal, ConfirmModal } from '@/components/ui'
 import { useSedeStore } from '@/stores'
 import ExpedienteForm from './ExpedienteForm'
 import { toast } from 'react-toastify'
@@ -24,6 +24,9 @@ export default function Expedientes() {
   const [estado, setEstado] = useState('')
   const [page, setPage] = useState(1)
   const [showCreate, setShowCreate] = useState(false)
+  const [editExp, setEditExp] = useState<Expediente | null>(null)
+  const [deleteExp, setDeleteExp] = useState<Expediente | null>(null)
+  const [actionLoading, setActionLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -58,8 +61,24 @@ export default function Expedientes() {
 
   const handleCreated = (exp: Expediente) => {
     setShowCreate(false)
-    toast.success(`Expediente ${exp.numeroExpediente} creado`)
+    setEditExp(null)
+    toast.success(`Expediente ${exp.numeroExpediente} ${editExp ? 'actualizado' : 'creado'}`)
     load()
+  }
+
+  const handleDelete = async () => {
+    if (!deleteExp) return
+    setActionLoading(true)
+    try {
+      await expedientesApi.delete(deleteExp.id)
+      toast.success('Expediente eliminado')
+      setDeleteExp(null)
+      load()
+    } catch (err: unknown) {
+      toast.error(getErrMsg(err))
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   return (
@@ -72,7 +91,7 @@ export default function Expedientes() {
             {sede !== 'Todas' ? ` · Sede ${sede}` : ''}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
+        <button onClick={() => { setShowCreate(true); setEditExp(null) }} className="btn-primary">
           <Plus size={16}/>Nuevo expediente
         </button>
       </div>
@@ -118,19 +137,30 @@ export default function Expedientes() {
               <th>Monto</th>
               <th>Estado</th>
               <th>Fecha</th>
+              <th/>
             </tr>
           </thead>
           <tbody>
-            {loading ? <SkeletonRows cols={6}/> : exps.length === 0 ? (
-              <tr><td colSpan={6}><EmptyState title="Sin expedientes" description="Ningún expediente coincide con los filtros."/></td></tr>
+            {loading ? <SkeletonRows cols={7}/> : exps.length === 0 ? (
+              <tr><td colSpan={7}><EmptyState title="Sin expedientes" description="Ningún expediente coincide con los filtros."/></td></tr>
             ) : exps.map(exp => (
-              <tr key={exp.id} onClick={() => navigate(`/app/expedientes/${exp.id}`)}>
-                <td className="font-mono font-semibold text-brand-600 text-xs whitespace-nowrap">{exp.numeroExpediente}</td>
-                <td className="font-medium text-slate-800 max-w-[200px] truncate">{exp.deudor.nombreCompleto}</td>
-                <td className="font-mono text-xs text-slate-500">{exp.deudor.numeroIdentificacion}</td>
-                <td className="font-mono font-semibold text-slate-700 whitespace-nowrap">{fmt.money(exp.deuda.montoAdeudado)}</td>
-                <td><EstadoBadge estado={exp.estado.actual as EstadoExpediente}/></td>
-                <td className="text-xs text-slate-400 whitespace-nowrap">{fmt.date(exp.metadata?.fechaCreacion ?? exp.estado.fechaActualizacion)}</td>
+              <tr key={exp.id}>
+                <td className="font-mono font-semibold text-brand-600 text-xs whitespace-nowrap cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}>{exp.numeroExpediente}</td>
+                <td className="font-medium text-slate-800 max-w-[200px] truncate cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}>{exp.deudor.nombreCompleto}</td>
+                <td className="font-mono text-xs text-slate-500 cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}>{exp.deudor.numeroIdentificacion}</td>
+                <td className="font-mono font-semibold text-slate-700 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}>{fmt.money(exp.deuda.montoAdeudado)}</td>
+                <td className="cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}><EstadoBadge estado={exp.estado.actual as EstadoExpediente}/></td>
+                <td className="text-xs text-slate-400 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/app/expedientes/${exp.id}`)}>{fmt.date(exp.metadata?.fechaCreacion ?? exp.estado.fechaActualizacion)}</td>
+                <td>
+                  <div className="flex gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); setEditExp(exp) }} className="btn-ghost p-1.5 rounded-lg">
+                      <Edit2 size={13}/>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setDeleteExp(exp) }} className="btn-ghost p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50">
+                      <Trash2 size={13}/>
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -139,10 +169,15 @@ export default function Expedientes() {
 
       <Pagination {...pagination} onPage={setPage}/>
 
-      {/* Create modal */}
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nuevo expediente" size="lg">
-        <ExpedienteForm onSuccess={handleCreated} onCancel={() => setShowCreate(false)}/>
+      {/* Create/Edit modal */}
+      <Modal open={showCreate || Boolean(editExp)} onClose={() => { setShowCreate(false); setEditExp(null) }} 
+        title={editExp ? 'Editar expediente' : 'Nuevo expediente'} size="lg">
+        <ExpedienteForm expediente={editExp} onSuccess={handleCreated} onCancel={() => { setShowCreate(false); setEditExp(null) }}/>
       </Modal>
+
+      <ConfirmModal open={Boolean(deleteExp)} onClose={() => setDeleteExp(null)} onConfirm={handleDelete}
+        title="Eliminar expediente" danger loading={actionLoading}
+        message={`¿Eliminar el expediente ${deleteExp?.numeroExpediente}? Esta acción no se puede deshacer.`}/>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, CreditCard, Clock,
-  FileText, RefreshCw, ChevronRight
+  FileText, RefreshCw, ChevronRight, Download
 } from 'lucide-react'
 import type { BusquedaPublicaResp } from '@/types'
 import { fmt } from '@/utils'
@@ -86,15 +86,14 @@ export default function PortalResultado() {
     } finally { setRefreshing(false) }
   }
 
-  const handlePagar = () => {
-    if (!exp?.id || !exp?.deuda?.montoAdeudado || !exp?.deudor?.email) {
-      toast.error('Datos incompletos. Actualizá la página.')
+  const handleDownloadCert = () => {
+    const codigo = sessionStorage.getItem('portal_codigo') ?? ''
+    if (!codigo) {
+      toast.error('Código de verificación no encontrado. Volvé al inicio.')
       return
     }
-    sessionStorage.setItem('portal_pago_expId',  exp.id)
-    sessionStorage.setItem('portal_pago_monto',  String(exp.deuda.montoAdeudado))
-    sessionStorage.setItem('portal_pago_email',  exp.deudor.email)
-    navigate('/portal/pago')
+    const url = expedientesApi.descargarCertificadoPublicoUrl(exp.id, codigo)
+    window.open(url, '_blank')
   }
 
   return (
@@ -143,10 +142,13 @@ export default function PortalResultado() {
         )}
 
         {hasCert && (
-          <div className="mt-5 pt-4 border-t border-slate-100">
+          <div className="mt-5 pt-4 border-t border-slate-100 space-y-3">
             <div className="alert alert-success text-sm">
               📜 Tu certificado está listo. Acercate a la sede para retirarlo o presentá el número de expediente.
             </div>
+            <button onClick={handleDownloadCert} className="btn-primary btn-lg w-full justify-center">
+              <Download size={18}/>Descargar certificado PDF
+            </button>
           </div>
         )}
       </div>

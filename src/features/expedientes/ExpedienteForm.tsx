@@ -9,18 +9,36 @@ const SEDES   = ['Santa Fe', 'Rosario', 'Venado Tuerto', 'Rafaela', 'Reconquista
 const TIPOS   = ['DNI', 'CEDULA', 'PASAPORTE']
 const PARENT  = ['Hijo/a', 'Cónyuge', 'Concubino/a', 'Hermano/a', 'Otro']
 
-interface Props { onSuccess: (e: Expediente) => void; onCancel: () => void }
+interface Props { 
+  expediente?: Expediente | null
+  onSuccess: (e: Expediente) => void; 
+  onCancel: () => void 
+}
 
-export default function ExpedienteForm({ onSuccess, onCancel }: Props) {
+export default function ExpedienteForm({ expediente, onSuccess, onCancel }: Props) {
+  const isEdit = Boolean(expediente)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [form, setForm] = useState({
-    deudor: { nombreCompleto: '', tipoIdentificacion: 'DNI', numeroIdentificacion: '', email: '', telefono: '' },
-    deuda:  { montoAdeudado: '', periodoDeuda: '', beneficiario: { nombre: '', parentesco: '' } },
-    sede:   '',
-    observaciones: '',
+    deudor: { 
+      nombreCompleto: expediente?.deudor.nombreCompleto ?? '', 
+      tipoIdentificacion: expediente?.deudor.tipoIdentificacion ?? 'DNI', 
+      numeroIdentificacion: expediente?.deudor.numeroIdentificacion ?? '', 
+      email: expediente?.deudor.email ?? '', 
+      telefono: expediente?.deudor.telefono ?? '' 
+    },
+    deuda:  { 
+      montoAdeudado: expediente?.deuda.montoAdeudado?.toString() ?? '', 
+      periodoDeuda: expediente?.deuda.periodoDeuda ?? '', 
+      beneficiario: { 
+        nombre: expediente?.deuda.beneficiario.nombre ?? '', 
+        parentesco: expediente?.deuda.beneficiario.parentesco ?? '' 
+      } 
+    },
+    sede:   expediente?.metadata?.sede ?? '',
+    observaciones: expediente?.observaciones ?? '',
   })
 
   const set = (path: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -44,7 +62,7 @@ export default function ExpedienteForm({ onSuccess, onCancel }: Props) {
     else if (!/^\d{7,12}$/.test(d.numeroIdentificacion)) e['deudor.numeroIdentificacion'] = 'Solo dígitos, 7-12 chars'
     if (!d.email.trim()) e['deudor.email'] = 'Requerido'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) e['deudor.email'] = 'Email inválido'
-    if (d.telefono && !/^(\+[\d\s\-]{7,20})?$/.test(d.telefono)) e['deudor.telefono'] = 'Formato: +54 11 1234-5678'
+    if (d.telefono && !/^\d{8,12}$/.test(d.telefono)) e['deudor.telefono'] = 'Solo números, 8-12 dígitos'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -70,7 +88,9 @@ export default function ExpedienteForm({ onSuccess, onCancel }: Props) {
         ...form,
         deuda: { ...form.deuda, montoAdeudado: Number(form.deuda.montoAdeudado) },
       }
-      const exp = await expedientesApi.create(payload)
+      const exp = isEdit && expediente
+        ? await expedientesApi.update(expediente.id, payload)
+        : await expedientesApi.create(payload)
       onSuccess(exp)
     } catch (err: unknown) {
       toast.error(getErrMsg(err))
@@ -126,7 +146,7 @@ export default function ExpedienteForm({ onSuccess, onCancel }: Props) {
             </div>
             <div>
               <label className="field-label">Teléfono (opcional)</label>
-              <input className="field-input" placeholder="+54 11 1234-5678"
+              <input className="field-input" placeholder="3412345678"
                 value={form.deudor.telefono} onChange={set('deudor.telefono')}/>
               <Err k="deudor.telefono"/>
             </div>
@@ -184,7 +204,7 @@ export default function ExpedienteForm({ onSuccess, onCancel }: Props) {
           <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
             <button onClick={() => setStep(1)} className="btn-outline">← Anterior</button>
             <button onClick={handleSubmit} disabled={loading} className="btn-primary">
-              {loading ? <><Spinner size="sm"/>Creando…</> : 'Crear expediente'}
+              {loading ? <><Spinner size="sm"/>{isEdit ? 'Guardando…' : 'Creando…'}</> : isEdit ? 'Guardar cambios' : 'Crear expediente'}
             </button>
           </div>
         </div>

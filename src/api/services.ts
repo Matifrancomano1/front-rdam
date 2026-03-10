@@ -36,6 +36,8 @@ export const expedientesApi = {
     api.post('/expedientes', payload).then(r => r.data.data as Expediente),
   update: (id: string, payload: unknown) =>
     api.put(`/expedientes/${id}`, payload).then(r => r.data.data as Expediente),
+  delete: (id: string) =>
+    api.delete(`/expedientes/${id}`).then(r => r.data),
   aprobar: (id: string, observaciones: string) =>
     api.post(`/expedientes/${id}/aprobar`, { observaciones }).then(r => r.data.data),
   rechazar: (id: string, observaciones: string) =>
@@ -81,6 +83,8 @@ export const expedientesApi = {
   },
   // ⚠️ REQUIERE JWT — solo operadores/admin o ciudadano con email coincidente
   descargarCertificadoUrl: (expId: string) => `/v1/expedientes/${expId}/certificado/descargar`,
+  // Endpoint público para descargar certificado usando código de verificación
+  descargarCertificadoPublicoUrl: (expId: string, codigo: string) => `/v1/expedientes/publico/${expId}/certificado/descargar?codigo=${codigo}`,
   solicitarCodigo: (dni: string, email: string) =>
     publicApi.post('/expedientes/publico/solicitar-codigo', { dni, email }).then(r => r.data),
   // ⚠️ TODOS los parámetros obligatorios — backend lanza 400 si falta alguno
