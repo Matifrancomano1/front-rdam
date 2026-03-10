@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    min-height: 100dvh;
+  }
+  #root { min-height: 100dvh; }
+}
+
+@layer components {
+  /* ── Cards ── */
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-5;
+  }
+  .card-sm { @apply bg-white rounded-xl border border-slate-200 shadow-card p-4; }
+
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm
+           transition-all duration-150 select-none cursor-pointer
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white px-4 py-2.5
+           hover:bg-brand-700 active:scale-95
+           focus-visible:ring-brand-500;
+  }
+  .btn-secondary {
+    @apply btn bg-slate-100 text-slate-700 px-4 py-2.5
+           hover:bg-slate-200 active:scale-95
+           focus-visible:ring-slate-400;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white px-4 py-2.5
+           hover:bg-red-700 active:scale-95
+           focus-visible:ring-red-500;
+  }
+  .btn-success {
+    @apply btn bg-emerald-600 text-white px-4 py-2.5
+           hover:bg-emerald-700 active:scale-95
+           focus-visible:ring-emerald-500;
+  }
+  .btn-outline {
+    @apply btn border border-slate-300 bg-white text-slate-700 px-4 py-2.5
+           hover:bg-slate-50 active:scale-95
+           focus-visible:ring-slate-400;
+  }
+  .btn-ghost {
+    @apply btn text-slate-600 px-3 py-2
+           hover:bg-slate-100 active:scale-95
+           focus-visible:ring-slate-400;
+  }
+  .btn-lg { @apply px-6 py-3.5 text-base; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+
+  /* ── Form fields ── */
+  .field-label {
+    @apply block text-sm font-medium text-slate-700 mb-1.5;
+  }
+  .field-input {
+    @apply w-full rounded-xl border border-slate-300 bg-white
+           px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400
+           transition-colors duration-150 outline-none
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-100
+           disabled:bg-slate-50 disabled:text-slate-500;
+  }
+  .field-select {
+    @apply field-input appearance-none cursor-pointer;
+  }
+  .field-textarea {
+    @apply field-input resize-none;
+  }
+  .field-error {
+    @apply text-xs text-red-600 mt-1 flex items-center gap-1;
+  }
+  .field-hint {
+    @apply text-xs text-slate-500 mt-1;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-blue   { @apply badge bg-brand-50 text-brand-700 border border-brand-200; }
+  .badge-yellow { @apply badge bg-amber-50 text-amber-700 border border-amber-200; }
+  .badge-green  { @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .badge-purple { @apply badge bg-purple-50 text-purple-700 border border-purple-200; }
+  .badge-red    { @apply badge bg-red-50 text-red-700 border border-red-200; }
+  .badge-gray   { @apply badge bg-slate-100 text-slate-600 border border-slate-200; }
+
+  /* ── Estado badges ── */
+  .estado-pendiente   { @apply badge-yellow; }
+  .estado-aprobado    { @apply badge-blue; }
+  .estado-pago-conf   { @apply badge-purple; }
+  .estado-cert        { @apply badge-green; }
+  .estado-rechazado   { @apply badge-red; }
+  .estado-expirado    { @apply badge-gray; }
+
+  /* ── Table ── */
+  .table-wrap { @apply overflow-x-auto rounded-xl border border-slate-200; }
+  .table-base { @apply w-full text-sm; }
+  .table-base thead { @apply bg-slate-50 border-b border-slate-200; }
+  .table-base th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap;
+  }
+  .table-base tbody tr {
+    @apply border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer;
+  }
+  .table-base tbody tr:last-child { @apply border-0; }
+  .table-base td { @apply px-4 py-3 text-slate-700; }
+
+  /* ── Alerts ── */
+  .alert {
+    @apply flex gap-3 p-4 rounded-xl text-sm;
+  }
+  .alert-info    { @apply alert bg-brand-50 text-brand-800 border border-brand-200; }
+  .alert-success { @apply alert bg-emerald-50 text-emerald-800 border border-emerald-200; }
+  .alert-warn    { @apply alert bg-amber-50 text-amber-800 border border-amber-200; }
+  .alert-error   { @apply alert bg-red-50 text-red-800 border border-red-200; }
+
+  /* ── Stat card ── */
+  .stat-card {
+    @apply card flex flex-col gap-1;
+  }
+  .stat-label  { @apply text-xs font-medium text-slate-500 uppercase tracking-wider; }
+  .stat-value  { @apply text-3xl font-bold text-slate-900 font-mono; }
+  .stat-trend  { @apply text-xs font-medium flex items-center gap-1; }
+
+  /* ── Timeline ── */
+  .timeline { @apply relative pl-6; }
+  .timeline::before {
+    content: '';
+    @apply absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-200;
+  }
+  .timeline-item { @apply relative pb-6 last:pb-0; }
+  .timeline-dot {
+    @apply absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 border-white ring-2 ring-brand-400 bg-brand-500;
+  }
+
+  /* ── Modal overlay ── */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50
+           flex items-end sm:items-center justify-center p-4;
+  }
+  .modal-box {
+    @apply bg-white rounded-2xl shadow-card-lg w-full max-h-[90dvh] overflow-y-auto
+           animate-[modal-in_0.2s_ease-out];
+  }
+  .modal-sm  { @apply max-w-md; }
+  .modal-md  { @apply max-w-xl; }
+  .modal-lg  { @apply max-w-3xl; }
+
+  /* ── Section header ── */
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6;
+  }
+  .page-title { @apply text-xl font-bold text-slate-900; }
+  .page-sub   { @apply text-sm text-slate-500 mt-0.5; }
+
+  /* ── File upload drop zone ── */
+  .drop-zone {
+    @apply border-2 border-dashed border-slate-300 rounded-xl p-8 text-center
+           hover:border-brand-400 hover:bg-brand-50/30 transition-colors cursor-pointer;
+  }
+  .drop-zone-active {
+    @apply border-brand-500 bg-brand-50 !important;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .text-balance { text-wrap: balance; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.3s ease-out forwards;
+}
