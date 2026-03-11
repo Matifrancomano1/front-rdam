@@ -72,11 +72,20 @@ export default function PortalResultado() {
   // ⚠️ Certificado se descarga yendo a la sede — el endpoint requiere JWT
   const hasCert = estadoActual === 'Certificado Emitido' && exp.tieneCertificado
 
+  const handlePagar = () => {
+    // Setear datos que PortalPago necesita
+    sessionStorage.setItem('portal_pago_expId', exp.id)
+    sessionStorage.setItem('portal_pago_monto', String(exp.deuda?.montoAdeudado ?? 0))
+    sessionStorage.setItem('portal_pago_email', sessionStorage.getItem('portal_email') ?? exp.deudor?.email ?? '')
+    navigate('/portal/pago')
+  }
+
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
       const email = sessionStorage.getItem('portal_email') ?? exp.deudor?.email ?? ''
-      const fresh = await expedientesApi.buscarPublico(exp.deudor.numeroIdentificacion, email)
+      const codigo = sessionStorage.getItem('portal_codigo') ?? ''
+      const fresh = await expedientesApi.buscarPublico(exp.deudor.numeroIdentificacion, email, codigo)
       if (!fresh?.id) { toast.error('No se pudo actualizar.'); return }
       sessionStorage.setItem('portal_exp', JSON.stringify(fresh))
       setExp(fresh)
@@ -87,13 +96,13 @@ export default function PortalResultado() {
   }
 
   const handleDownloadCert = () => {
-    const codigo = sessionStorage.getItem('portal_codigo') ?? ''
-    if (!codigo) {
-      toast.error('Código de verificación no encontrado. Volvé al inicio.')
+    const dni = exp.deudor?.numeroIdentificacion ?? ''
+    const email = sessionStorage.getItem('portal_email') ?? exp.deudor?.email ?? ''
+    if (!dni || !email) {
+      toast.error('Datos insuficientes para descargar el certificado.')
       return
     }
-    const url = expedientesApi.descargarCertificadoPublicoUrl(exp.id, codigo)
-    window.open(url, '_blank')
+    window.open(expedientesApi.descargarCertificadoPublicoUrl(exp.id, dni, email), '_blank')
   }
 
   return (

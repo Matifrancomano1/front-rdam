@@ -5,6 +5,7 @@ import {
   Download, FileText, Info
 } from 'lucide-react'
 import { expedientesApi, pagosApi } from '@/api/services'
+import { api } from '@/api/client'
 import type { Expediente, HistorialItem, Pago, Documento } from '@/types'
 import { fmt, getErrMsg, canApprove, canReject, canCert, hasCert } from '@/utils'
 import {
@@ -195,12 +196,24 @@ export default function ExpedienteDetail() {
           </button>
         )}
         {hasCert(estado) && (
-          // ⚠️ Este endpoint requiere JWT — se descarga como admin/operador
-          <a href={`/v1/expedientes/${exp.id}/certificado/descargar`}
-            target="_blank" rel="noopener noreferrer"
-            className="btn-outline btn-sm">
+          <button
+            onClick={async () => {
+              try {
+                const { data } = await api.get(`/expedientes/${exp.id}/certificado/descargar`, { responseType: 'blob' })
+                const url = window.URL.createObjectURL(data)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = `certificado_${exp.numeroExpediente}.pdf`
+                link.click()
+                window.URL.revokeObjectURL(url)
+              } catch {
+                toast.error('No se pudo descargar el certificado')
+              }
+            }}
+            className="btn-outline btn-sm"
+          >
             <Download size={14}/>Descargar certificado
-          </a>
+          </button>
         )}
       </div>
 

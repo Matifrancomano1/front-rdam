@@ -77,6 +77,10 @@ export default function PortalHome() {
       sessionStorage.setItem('portal_exp',   JSON.stringify(exp))
       sessionStorage.setItem('portal_email', email.trim())
       sessionStorage.setItem('portal_codigo', codigo.trim())
+      // Preparar datos para PortalPago por si el estado requiere pago
+      sessionStorage.setItem('portal_pago_expId', exp.id)
+      sessionStorage.setItem('portal_pago_monto', String(exp.deuda?.montoAdeudado ?? 0))
+      sessionStorage.setItem('portal_pago_email', email.trim())
       navigate('/portal/resultado')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
