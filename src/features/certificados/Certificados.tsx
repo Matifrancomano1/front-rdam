@@ -62,7 +62,7 @@ export default function Certificados() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Certificados</h1>
-          <p className="page-sub">Validación de autenticidad de certificados emitidos</p>
+          <p className="page-sub">Ingresá el número de certificado para verificar su autenticidad. agregar la palabra CERT antes de poner el certificado</p>
         </div>
       </div>
 

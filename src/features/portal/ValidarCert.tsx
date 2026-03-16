@@ -65,7 +65,7 @@ export default function ValidarCert() {
       <div className="text-center mb-10">
         <div className="text-5xl mb-4">📜</div>
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Validación de certificado</h1>
-        <p className="text-slate-500 text-sm">Ingresá el número de certificado para verificar su autenticidad.</p>
+        <p className="text-slate-500 text-sm">Ingresá el número de certificado para verificar su autenticidad. agregar la palabra CERT antes de poner el certificado</p>
       </div>
 
       <div className="card shadow-card-lg mb-6">
