@@ -5,7 +5,7 @@ const BASE = '/v1'
 export const api = axios.create({
   baseURL: BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: 60000,
 })
 
 // ── Attach token ──────────────────────────────
@@ -75,5 +75,5 @@ function clearSession() {
 export const publicApi = axios.create({
   baseURL: BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: 60000,
 })

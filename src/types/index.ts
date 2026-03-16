@@ -95,7 +95,6 @@ export interface HistorialItem {
   usuario: { id: string; nombre: string }
   fechaCambio: string
   observaciones: string
-  ipAddress?: string
 }
 
 export interface Expediente {
@@ -255,11 +254,8 @@ export interface Certificado {
 export interface AuditoriaLog {
   id: string
   usuario: { id: string; nombre: string; email: string }
+  expedienteId?: string
   accion: string
-  entidad: string
-  entidadId: string
-  ipAddress: string
-  userAgent?: string
-  detalles?: Record<string, unknown>
-  fecha: string
+  detalles?: unknown
+  createdAt: string
 }

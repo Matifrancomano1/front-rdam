@@ -84,17 +84,16 @@ export default function Auditoria() {
                   <th>Fecha</th>
                   <th>Usuario</th>
                   <th>Acción</th>
-                  <th>Entidad</th>
-                  <th>ID entidad</th>
-                  <th>IP</th>
+                  <th>Expediente</th>
+                  <th>Detalles</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.length === 0 ? (
-                  <tr><td colSpan={6}><EmptyState title="Sin registros" description="No hay logs con los filtros aplicados."/></td></tr>
+                  <tr><td colSpan={5}><EmptyState title="Sin registros" description="No hay logs con los filtros aplicados."/></td></tr>
                 ) : logs.map(l => (
                   <tr key={l.id} className="cursor-default">
-                    <td className="font-mono text-xs text-slate-400 whitespace-nowrap">{fmt.dateTime(l.fecha)}</td>
+                    <td className="font-mono text-xs text-slate-400 whitespace-nowrap">{fmt.dateTime(l.createdAt)}</td>
                     <td>
                       <p className="text-xs font-medium text-slate-800">{l.usuario.nombre}</p>
                       <p className="text-[10px] text-slate-400">{l.usuario.email}</p>
@@ -102,9 +101,12 @@ export default function Auditoria() {
                     <td>
                       <span className={clsx('badge', ACCION_COLOR[l.accion] ?? 'badge-gray')}>{l.accion}</span>
                     </td>
-                    <td className="text-xs text-slate-500">{l.entidad}</td>
-                    <td className="font-mono text-xs text-slate-400">{l.entidadId?.slice(0, 8)}…</td>
-                    <td className="font-mono text-xs text-slate-400">{l.ipAddress}</td>
+                    <td className="font-mono text-xs text-slate-500">
+                      {l.expedienteId ? l.expedienteId.slice(0, 8) + '…' : '-'}
+                    </td>
+                    <td className="text-xs text-slate-500 max-w-xs truncate">
+                      {l.detalles ? JSON.stringify(l.detalles) : '-'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
